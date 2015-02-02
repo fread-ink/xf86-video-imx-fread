@@ -21,6 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
+#include <xorg-server.h>
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -32,6 +33,7 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "compat-api.h"
 
 /* Set if handles pixmap allocation and migration, i.e, EXA_HANDLES_PIXMAPS */
 #define	IMX_EXA_ENABLE_HANDLES_PIXMAPS	\
@@ -299,7 +301,7 @@ imxExaZ160GetPixmapAddress(PixmapPtr pPixmap)
 	return fPixmapPtr->ptr;
 #else
 	/* Access screen associated with this pixmap. */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -344,7 +346,7 @@ imxExaZ160GetPixmapProperties(
 #else
 
 	/* Access screen associated with this pixmap. */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Make sure pixmap is in framebuffer */
 	if (!exaDrawableIsOffscreen(&(pPixmap->drawable))) {
@@ -856,7 +858,7 @@ imxExaZ160SyncIfBusyPixmap(PixmapPtr pPixmap)
 {
 	/* Access screen associated with this pixmap. */
 	ScreenPtr pScreen = pPixmap->drawable.pScreen;
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 
 	/* Access driver specific data for screen. */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -924,7 +926,7 @@ imxExaZ160CreatePixmap2(ScreenPtr pScreen, int width, int height,
 	}
 
 	/* Access the driver specific data. */
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 	ImxPtr imxPtr = IMXPTR(pScrn);
 	ImxExaZ160Ptr fPtr = IMXEXAZ160PTR(imxPtr);
 	
@@ -1028,7 +1030,7 @@ imxExaZ160DestroyPixmap(ScreenPtr pScreen, void *driverPriv)
 	ImxExaPixmapPtr fPixmapPtr = (ImxExaPixmapPtr)driverPriv;
 
 	/* Access the driver specific data. */
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 	ImxPtr imxPtr = IMXPTR(pScrn);
 	ImxExaZ160Ptr fPtr = IMXEXAZ160PTR(imxPtr);
 
@@ -1068,7 +1070,7 @@ imxExaZ160ModifyPixmapHeader(PixmapPtr pPixmap, int width, int height,
 	}
 
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1194,7 +1196,7 @@ imxExaZ160TrackBusyPixmap(ImxExaZ160Ptr fPtr, PixmapPtr pPixmap)
 static void
 imxExaZ160WaitMarker(ScreenPtr pScreen, int marker)
 {
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 
 	/* Access driver specific data associated with the screen. */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1249,7 +1251,7 @@ imxExaZ160PrepareSolid(PixmapPtr pPixmap, int alu, Pixel planemask, Pixel fg)
 	}
 
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1352,7 +1354,7 @@ static void
 imxExaZ160Solid(PixmapPtr pPixmap, int x1, int y1, int x2, int y2)
 {
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1423,7 +1425,7 @@ static void
 imxExaZ160DoneSolid(PixmapPtr pPixmap)
 {
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1485,7 +1487,7 @@ imxExaZ160PrepareCopy(
 	}
 
 	/* Access the screen associated with this pixmap. */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1599,7 +1601,7 @@ static void
 imxExaZ160Copy(PixmapPtr pPixmapDst, int srcX, int srcY, int dstX, int dstY, int width, int height)
 {
 	/* Access screen associated with dst pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1661,7 +1663,7 @@ static void
 imxExaZ160DoneCopy(PixmapPtr pPixmapDst)
 {
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -1770,7 +1772,7 @@ imxExaZ160CheckComposite(int op, PicturePtr pPictureSrc, PicturePtr pPictureMask
 	}
 
 	/* Access screen associated with dst pixmap (same screen as for src pixmap). */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Check the number of entities, and fail if it isn't one. */
 	if (pScrn->numEntities != 1) {
@@ -1987,7 +1989,7 @@ imxExaZ160PrepareComposite(
 {
 	/* Access screen associated with dst pixmap. */
 	/* Should be same screen as for src pixmap. */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* NOTE - many preconditions already verified in CheckComposite. */
 
@@ -2196,7 +2198,7 @@ imxExaZ160Composite(
 	int height)
 {
 	/* Access screen associated with dst pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -2275,7 +2277,7 @@ static void
 imxExaZ160DoneComposite(PixmapPtr pPixmapDst)
 {
 	/* Access screen associated with this pixmap */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmapDst->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmapDst->drawable.pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -2323,7 +2325,7 @@ imxExaZ160UploadToScreen(
 
 	/* Access screen associated with this pixmap */
 	ScreenPtr pScreen = pPixmapDst->drawable.pScreen;
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -2381,7 +2383,7 @@ imxExaZ160DownloadFromScreen(
 
 	/* Access screen associated with this pixmap */
 	ScreenPtr pScreen = pPixmapSrc->drawable.pScreen;
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 
 	/* Access driver specific data */
 	ImxPtr imxPtr = IMXPTR(pScrn);
@@ -2412,9 +2414,9 @@ imxExaZ160DownloadFromScreen(
 }
 
 Bool
-imxExaZ160CloseScreen(int scrnIndex, ScreenPtr pScreen)
+imxExaZ160CloseScreen(CLOSE_SCREEN_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	CLOSE_SCREEN_DECL_ScrnInfoPtr;
 	ImxPtr imxPtr = IMXPTR(pScrn);
 
 	ImxExaZ160Ptr fPtr = IMXEXAZ160PTR(imxPtr);
@@ -2504,7 +2506,7 @@ imxExaZ160CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	/* Install our CloseScreen function so that it gets called. */
 	if (NULL != pScreen->CloseScreen) {
 
-		return (*pScreen->CloseScreen)(scrnIndex, pScreen);
+		return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);
 	}
 
 	return TRUE;
@@ -2514,7 +2516,7 @@ Bool
 imxExaZ160Setup(int scrnIndex, ScreenPtr pScreen)
 {
 	/* Access the screen info and then private data structures. */
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 	ImxPtr imxPtr = IMXPTR(pScrn);
 
 	/* Private data structure must not already be in use. */
@@ -2582,7 +2584,7 @@ imxExaZ160Setup(int scrnIndex, ScreenPtr pScreen)
 
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"Initialize Z160 interfaces failed.\n");
-		imxExaZ160CloseScreen(scrnIndex, pScreen);
+		imxExaZ160CloseScreen(CLOSE_SCREEN_ARGS);
 		return FALSE;
 	}
 
@@ -2592,7 +2594,7 @@ imxExaZ160Setup(int scrnIndex, ScreenPtr pScreen)
 
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"Allocate EXA driver structure.\n");
-		imxExaZ160CloseScreen(scrnIndex, pScreen);
+		imxExaZ160CloseScreen(CLOSE_SCREEN_ARGS);
 		return FALSE;
 	}
 
@@ -2657,7 +2659,7 @@ imxExaZ160Setup(int scrnIndex, ScreenPtr pScreen)
 	if (!exaDriverInit(pScreen, exaDriverPtr)) {
 
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "EXA initialization failed.\n");
-		imxExaZ160CloseScreen(scrnIndex, pScreen);
+		imxExaZ160CloseScreen(CLOSE_SCREEN_ARGS);
 		return FALSE;
 	}
 	fPtr->imxExaRec.exaDriverPtr = exaDriverPtr;

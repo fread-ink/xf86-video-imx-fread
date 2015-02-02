@@ -53,7 +53,7 @@
  * When allocating, the contiguous block of areas with the minimum eviction
  * cost is found and evicted in order to make room for the new allocation.
  */
-
+#include <xorg-server.h>
 
 #include "xf86.h"
 #include "exa.h"
@@ -79,7 +79,7 @@ static void
 imxExaOffscreenValidate (ScreenPtr pScreen)
 {
     /* Access the driver specific data. */
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
     ExaOffscreenArea *prev = 0, *area;
@@ -135,7 +135,7 @@ imxExaOffscreenMerge (ImxExaPtr imxExaPtr, ExaOffscreenArea *area)
 ExaOffscreenArea *
 imxExaOffscreenFree (ScreenPtr pScreen, ExaOffscreenArea *area)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
     ExaOffscreenArea	*next = area->next;
@@ -281,7 +281,7 @@ imxExaOffscreenAlloc (ScreenPtr pScreen, int size, int align,
                    pointer privData)
 {
     ExaOffscreenArea *area;
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
     int real_size = 0, largest_avail = 0;
@@ -418,7 +418,7 @@ imxExaOffscreenSwapIn (ScreenPtr pScreen)
 Bool
 imxExaOffscreenInit (ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
     ExaOffscreenArea *area;
@@ -453,7 +453,7 @@ imxExaOffscreenInit (ScreenPtr pScreen)
 void
 imxExaOffscreenFini (ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
     ExaOffscreenArea *area;
@@ -472,7 +472,7 @@ imxExaOffscreenFini (ScreenPtr pScreen)
 void
 imxExaOffscreenSwapOut (ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
     ImxPtr imxPtr = IMXPTR(pScrn);
     ImxExaPtr imxExaPtr = IMXEXAPTR(imxPtr);
 

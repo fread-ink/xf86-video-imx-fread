@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/types.h>
 #include <linux/fb.h>
 #include <linux/mxcfb.h>
 
@@ -36,7 +37,6 @@
 #include "xf86_OSproc.h"
 
 #include "mipointer.h"
-#include "mibstore.h"
 #include "micmap.h"
 #include "colormapst.h"
 #include "xf86cmap.h"
@@ -45,6 +45,8 @@
 /* for visuals */
 #include "fb.h"
 #include "fbdevhw.h"
+
+#include "compat-api.h"
 
 #if GET_ABI_MAJOR(ABI_VIDEODRV_VERSION) < 6
 #include "xf86Resources.h"
@@ -435,17 +437,17 @@ errorPreInit:
 }
 
 static void
-imxFreeScreen(int scrnIndex, int flags)
+imxFreeScreen(FREE_SCREEN_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	SCRN_INFO_PTR(arg);
 
 	imxFreeRec(pScrn);
 }
 
 static Bool
-imxCloseScreen(int scrnIndex, ScreenPtr pScreen)
+imxCloseScreen(CLOSE_SCREEN_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	CLOSE_SCREEN_DECL_ScrnInfoPtr;
 	ImxPtr fPtr = IMXPTR(pScrn);
 
 	fbdevHWRestore(pScrn);
@@ -453,7 +455,7 @@ imxCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	pScrn->vtSema = FALSE;
 
 	pScreen->CloseScreen = fPtr->saveCloseScreen;
-	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
+	return (*pScreen->CloseScreen)(CLOSE_SCREEN_ARGS);
 }
 
 static int
@@ -488,9 +490,9 @@ LCM(a, b)
 }
 
 static Bool
-imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
+imxScreenInit(SCREEN_INIT_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 	ImxPtr fPtr = IMXPTR(pScrn);
 	VisualPtr visual;
 	int init_picture = 0;
@@ -514,7 +516,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Map frame buffer memory */
 	fPtr->fbMemoryBase = fbdevHWMapVidmem(pScrn);
 	if (NULL == fPtr->fbMemoryBase) {
-	        xf86DrvMsg(scrnIndex,X_ERROR,"mapping of video memory"
+	        xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"mapping of video memory"
 			   " failed\n");
 		return FALSE;
 	}
@@ -558,7 +560,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	const int fbOffsetScreen2 =
 		IMX_ALIGN(fbMaxScreenSize, fbMaxAlignOffset);
 	fPtr->fbMemoryScreenReserve = fbMaxScreenSize;
-	xf86DrvMsg(scrnIndex, X_INFO,
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 		"reserve %d bytes of frame buffer for screen\n",
 		fPtr->fbMemoryScreenReserve);
 	fPtr->fbMemoryStart2 = NULL;
@@ -568,12 +570,12 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 		fPtr->fbMemoryScreenReserve += fbOffsetScreen2;
 
-		xf86DrvMsg(scrnIndex, X_INFO,
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			"reserve same number of bytes for XRandR rotated screen at offset %d\n",
 			fbOffsetScreen2);
 	}
 
-	if (!imxDisplayStartScreenInit(scrnIndex, pScreen)) {
+	if (!imxDisplayStartScreenInit(pScrn->scrnIndex, pScreen)) {
 
 		return FALSE;
 	}
@@ -582,7 +584,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	miClearVisualTypes();
 	if (pScrn->bitsPerPixel > 8) {
 		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits, TrueColor)) {
-			xf86DrvMsg(scrnIndex,X_ERROR,"visual type setup failed"
+			xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"visual type setup failed"
 				   " for %d bits per pixel [1]\n",
 				   pScrn->bitsPerPixel);
 			return FALSE;
@@ -591,14 +593,14 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		if (!miSetVisualTypes(pScrn->depth,
 				      miGetDefaultVisualMask(pScrn->depth),
 				      pScrn->rgbBits, pScrn->defaultVisual)) {
-			xf86DrvMsg(scrnIndex,X_ERROR,"visual type setup failed"
+			xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"visual type setup failed"
 				   " for %d bits per pixel [2]\n",
 				   pScrn->bitsPerPixel);
 			return FALSE;
 		}
 	}
 	if (!miSetPixmapDepths()) {
-	  xf86DrvMsg(scrnIndex,X_ERROR,"pixmap depth setup failed\n");
+	  xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"pixmap depth setup failed\n");
 	  return FALSE;
 	}
 
@@ -607,10 +609,10 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		has a padding which is independent from the depth (controlfb) */
 	pScrn->displayWidth = fbdevHWGetLineLength(pScrn) /
 			      (pScrn->bitsPerPixel / 8);
-	xf86DrvMsg(scrnIndex, X_INFO, "displayWidth = %d\n", pScrn->displayWidth);
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "displayWidth = %d\n", pScrn->displayWidth);
 
 	if (pScrn->displayWidth != pScrn->virtualX) {
-		xf86DrvMsg(scrnIndex, X_INFO,
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   "Pitch updated to %d after ModeInit\n",
 			   pScrn->displayWidth);
 	}
@@ -633,7 +635,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			init_picture = 1;
 			break;
 	 	default:
-			xf86DrvMsg(scrnIndex, X_ERROR,
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 				   "internal error: invalid number of bits per"
 				   " pixel (%d) encountered in"
 				   " imxScreenInit()\n", pScrn->bitsPerPixel);
@@ -644,7 +646,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	case FBDEVHW_INTERLEAVED_PLANES:
 		/* This should never happen ...
 		* we should check for this much much earlier ... */
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: interleaved planes are not yet "
 			   "supported by the imx driver\n");
 		ret = FALSE;
@@ -652,20 +654,20 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	case FBDEVHW_TEXT:
 		/* This should never happen ...
 		* we should check for this much much earlier ... */
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: text mode is not supported by the "
 			   "imx driver\n");
 		ret = FALSE;
 		break;
 	case FBDEVHW_VGA_PLANES:
 		/* Not supported yet */
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: EGA/VGA Planes are not yet "
 			   "supported by the imx driver\n");
 		ret = FALSE;
 		break;
 	default:
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: unrecognised hardware type (%d) "
 			   "encountered in imxScreenInit()\n", type);
 		ret = FALSE;
@@ -699,7 +701,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* INIT ACCELERATION BEFORE INIT FOR BACKING STORE & SOFTWARE CURSOR */ 
 	if (fPtr->useAccel) {
 
-		if (!imxExaZ160Setup(scrnIndex, pScreen)) {
+		if (!imxExaZ160Setup(pScrn->scrnIndex, pScreen)) {
 
 			fPtr->useAccel = FALSE;
 		}
@@ -719,7 +721,6 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Initialize for X extensions. */
 	imxExtInit();
 
-	miInitializeBackingStore(pScreen);
 	xf86SetBackingStore(pScreen);
 
 	/* software cursor */
@@ -731,29 +732,29 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* XXX It would be simpler to use miCreateDefColormap() in all cases. */
 	case FBDEVHW_PACKED_PIXELS:
 		if (!miCreateDefColormap(pScreen)) {
-			xf86DrvMsg(scrnIndex, X_ERROR,
+			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
                                    "internal error: miCreateDefColormap failed "
 				   "in imxScreenInit()\n");
 			return FALSE;
 		}
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: interleaved planes are not yet "
 			   "supported by the imx driver\n");
 		return FALSE;
 	case FBDEVHW_TEXT:
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: text mode is not supported by "
 			   "the imx driver\n");
 		return FALSE;
 	case FBDEVHW_VGA_PLANES:
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: EGA/VGA planes are not yet "
 			   "supported by the imx driver\n");
 		return FALSE;
 	default:
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		           "internal error: unrecognised imx hardware type "
 			   "(%d) encountered in imxScreenInit()\n", type);
 		return FALSE;
@@ -782,7 +783,7 @@ imxScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
 #endif
 
-	if (!imxDisplayFinishScreenInit(scrnIndex, pScreen)) {
+	if (!imxDisplayFinishScreenInit(pScrn->scrnIndex, pScreen)) {
 		return FALSE;
 	}
 
@@ -810,7 +811,7 @@ IMXGetPixmapProperties(
 	}
 
 	/* Access screen associated with this pixmap. */
-	ScrnInfoPtr pScrn = xf86Screens[pPixmap->drawable.pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pPixmap->drawable.pScreen);
 
 	/* Check if the screen associated with this pixmap has IMX driver. */
 	if (0 != strcmp(IMX_DRIVER_NAME, pScrn->driverName)) {

@@ -398,7 +398,7 @@ xf86XVFillKeyHelper1 (ScreenPtr pScreen, CARD32 key, RegionPtr clipboxes)
 	xRectangle *rects;
 	GCPtr gc;
 
-	if(!xf86Screens[pScreen->myNum]->vtSema) return;
+	if(!xf86ScreenToScrn(pScreen)->vtSema) return;
 
 	gc = GetScratchGC(root->depth, pScreen);
 	pval[0] = key;
@@ -771,7 +771,7 @@ MXXVInitializeAdaptor
 	XF86VideoAdaptorPtr **pppAdaptor
 )
 {
-	ScreenPtr           pScreen    = screenInfo.screens[pScreenInfo->scrnIndex];
+	ScreenPtr           pScreen    = xf86ScrnToScreen(pScreenInfo);
 	XF86VideoAdaptorPtr *ppAdaptor = NULL;
 	IMXPtr fPtr = IMXPTR(pScreenInfo);
 	int                 nAdaptor;

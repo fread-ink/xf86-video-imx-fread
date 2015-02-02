@@ -20,4 +20,4 @@
 
 AUTOMAKE_OPTIONS = foreign
 SUBDIRS = src
-ACLOCAL_AMFLAGS = -I /usr/share/aclocal
+ACLOCAL_AMFLAGS = -I m4

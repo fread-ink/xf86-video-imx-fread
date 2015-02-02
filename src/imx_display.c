@@ -42,6 +42,8 @@
 #include "imx.h"
 #include "imx_display.h"
 
+#include "compat-api.h"
+
 #include <X11/Xatom.h>
 
 #if XORG_VERSION_CURRENT >= XORG_VERSION_NUMERIC(1,7,6,0,0)
@@ -1373,19 +1375,19 @@ imxDisplayPreInit(ScrnInfoPtr pScrn)
 Bool
 imxDisplayStartScreenInit(int scrnIndex, ScreenPtr pScreen)
 {
-	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+	ScrnInfoPtr pScrn = xf86ScreenToScrn(pScreen);
 	ImxPtr fPtr = IMXPTR(pScrn);
 
 	if (!xf86SetDesiredModes(pScrn)) {
 
-		xf86DrvMsg(scrnIndex, X_ERROR, "mode initialization failed\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "mode initialization failed\n");
 		return FALSE;
 	}
 
 #if 0
 	if (!fbdevHWModeInit(pScrn, pScrn->currentMode)) {
 
-		xf86DrvMsg(scrnIndex, X_ERROR, "mode initialization failed\n");
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "mode initialization failed\n");
 		return FALSE;
 	}
 	pScrn->displayWidth =
@@ -1463,29 +1465,29 @@ imxDisplayFinishScreenInit(int scrnIndex, ScreenPtr pScreen)
 /* -------------------------------------------------------------------- */
 
 Bool
-imxDisplaySwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+imxDisplaySwitchMode(SWITCH_MODE_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	SCRN_INFO_PTR(arg);
 
 	return xf86SetSingleMode(pScrn, mode, RR_Rotate_0);
 }
 
 void
-imxDisplayAdjustFrame(int scrnIndex, int x, int y, int flags)
+imxDisplayAdjustFrame(ADJUST_FRAME_ARGS_DECL)
 {
-//	fbdevHWAdjustFrame(scrnIndex, x, y, flags);
+//	fbdevHWAdjustFrame(pScrn->scrnIndex, x, y, flags);
 }
 
 Bool
-imxDisplayEnterVT(int scrnIndex, int flags)
+imxDisplayEnterVT(VT_FUNC_ARGS_DECL)
 {
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+	SCRN_INFO_PTR(arg);
 
 	return xf86SetDesiredModes(pScrn);
 }
 
 void
-imxDisplayLeaveVT(int scrnIndex, int flags)
+imxDisplayLeaveVT(VT_FUNC_ARGS_DECL)
 {
 }
 

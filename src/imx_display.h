@@ -59,16 +59,16 @@ imxDisplayValidMode(int scrnIndex, DisplayModePtr mode,
 			Bool verbose, int flags);
 
 extern Bool
-imxDisplaySwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+imxDisplaySwitchMode(SWITCH_MODE_ARGS_DECL);
 
 extern void
-imxDisplayAdjustFrame(int scrnIndex, int x, int y, int flags);
+imxDisplayAdjustFrame(ADJUST_FRAME_ARGS_DECL);
 
 extern Bool
-imxDisplayEnterVT(int scrnIndex, int flags);
+imxDisplayEnterVT(VT_FUNC_ARGS_DECL);
 
 extern void
-imxDisplayLeaveVT(int scrnIndex, int flags);
+imxDisplayLeaveVT(VT_FUNC_ARGS_DECL);
 
 extern Bool
 imxDisplayChangeFrameBufferRotateEPDC(int scrnIndex, int fbRotate);
