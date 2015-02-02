@@ -149,9 +149,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(imx_drv_ladir)" "$(DESTDIR)$(extdir)"
 LTLIBRARIES = $(imx_drv_la_LTLIBRARIES)
 imx_drv_la_LIBADD =
-am_imx_drv_la_OBJECTS = imx_accel.lo imx_display.lo imx_driver.lo \
-	imx_ext.lo imx_xv_ipu.lo imx_exa_z160.lo imx_exa_offscreen.lo \
-	neon_memcpy.lo neon_memmove.lo
+am_imx_drv_la_OBJECTS = imx_display.lo imx_driver.lo imx_ext.lo \
+	imx_xv_ipu.lo neon_memcpy.lo neon_memmove.lo
 imx_drv_la_OBJECTS = $(am_imx_drv_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -366,11 +365,11 @@ NEON_ASFLAGS = -k -mcpu=cortex-a8 $(NEON_CCASFLAGS)
 
 # Use these two lines to enable Xvideo support
 #AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=1 $(NEON_CFLAGS)
-#imx_drv_la_LDFLAGS = -module -avoid-version -lz160 -lipu
+#imx_drv_la_LDFLAGS = -module -avoid-version -lipu
 
 # Or use these two lines to disable Xvideo support
 AM_CFLAGS = @XORG_CFLAGS@ -DRENDER -DCOMPOSITE -DMITSHM -DIMX_XVIDEO_ENABLE=0 $(NEON_CFLAGS)
-imx_drv_la_LDFLAGS = -module -avoid-version -lz160
+imx_drv_la_LDFLAGS = -module -avoid-version
 AM_ASFLAGS = $(NEON_ASFLAGS)
 AM_CCASFLAGS = $(NEON_CCASFLAGS)
 imx_drv_la_LTLIBRARIES = imx_drv.la
@@ -378,17 +377,12 @@ imx_drv_ladir = @moduledir@/drivers
 ext_HEADERS = imx_ext.h
 imx_drv_la_SOURCES = \
 	imx.h \
-	imx_accel.c \
-	imx_accel.h \
-	imx_exa.h \
 	imx_display.c \
 	imx_display.h \
 	imx_driver.c \
 	imx_ext.c \
 	imx_ext.h \
 	imx_xv_ipu.c \
-	imx_exa_z160.c \
-	imx_exa_offscreen.c \
 	neon_memcpy.S \
 	neon_memmove.S
 
@@ -471,11 +465,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_accel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_display.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_driver.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_exa_offscreen.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_exa_z160.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_ext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imx_xv_ipu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/neon_memcpy.Plo@am__quote@
